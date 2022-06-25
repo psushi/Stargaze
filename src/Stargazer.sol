@@ -1,13 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {ISuperfluid, ISuperfluidToken} from "@superfluid-finance/interfaces/superfluid/ISuperfluid.sol";
+import {ISuperToken} from "@superfluid-finance/interfaces/superfluid/ISuperToken.sol";
+import {ISuperfluidToken} from "@superfluid-finance/interfaces/superfluid/ISuperfluidToken.sol";
 
-import {SuperfluidToken} from "@superfluid-finance/superfluid/SuperfluidToken.sol";
+import {SuperToken} from "@superfluid-finance/superfluid/SuperToken.sol";
 
 import {IInstantDistributionAgreementV1} from "@superfluid-finance/interfaces/agreements/IInstantDistributionAgreementV1.sol";
 
 import {IDAv1Library} from "@superfluid-finance/apps/IDAv1Library.sol";
+// import {Superfluid, InstantDistributionAgreementV1, SuperTokenFactory, SuperfluidFrameworkDeployer} from "@superfluid-finance/utils/SuperfluidFrameworkDeployer.sol";
+import {ISuperfluid} from "@superfluid-finance/interfaces/superfluid/ISuperfluid.sol";
 
 contract Stargazer {
     ///////////////////////////////////////////////////////////////////////////////
@@ -15,92 +18,87 @@ contract Stargazer {
     ///////////////////////////////////////////////////////////////////////////////
     using IDAv1Library for IDAv1Library.InitData;
 
-    IDAv1Library.InitData internal _idav1Lib;
+    IDAv1Library.InitData internal idaV1Lib;
 
-    address public constant USDCx = 0xaA1EA30cEe569fA70B8561c0F52F10Da249Aecb5;
+    ISuperToken public USDCx =
+        ISuperToken(address(0xaA1EA30cEe569fA70B8561c0F52F10Da249Aecb5));
 
-    uint256 public repoCount = 0;
+    uint32 public repoCount = 0;
 
     ///////////////////////////////////////////////////////////////////////////////
     // Repo struct
     ///////////////////////////////////////////////////////////////////////////////
     struct Repo {
-        uint256 superfluidIndex;
+        uint32 superfluidIndex;
         address admin;
-        address superTokenAddress;
+        ISuperToken impactToken;
     }
-    ///////////////////////////////////////////////////////////////////////////////
 
     ///////////////////////////////////////////////////////////////////////////////
-    // Stargazer Access control
+    // Stargazer Access
     ///////////////////////////////////////////////////////////////////////////////
+
+    // Optimism-kovan addresses
+    ISuperfluid host =
+        ISuperfluid(address(0x74b57883f8ce9F2BD330286E884CfD8BB24AC4ED));
+    IInstantDistributionAgreementV1 ida =
+        IInstantDistributionAgreementV1(
+            address(0x98E5E5d915Bf79ceeF02c72D1bf8f5b26f0bcBaA)
+        );
 
     mapping(string => Repo) public nameToRepo;
 
-    // constructor(
-    //     address admin,
-    //     ISuperfluid _host,
-    //     IInstantDistributionAgreement _ida // ISuperfluidToken _token
-    // ) {
-    //     _ADMIN = admin;
-    //     token = _token;
-    //     _idav1Lib = IDAv1Library.InitData(_host, _ida);
-    //     _idav1Lib.createIndex(ISuperfluidToken(), _INDEX_ID);
-    // }
+    constructor() {
+        idaV1Lib = IDAv1Library.InitData(host, ida);
+    }
 
     function initiateRepo(address admin, string calldata name) external {
-        require(nameToIndex[name] != 0, "ALREADY_EXISTS");
+        require(
+            address(nameToRepo[name].impactToken) == address(0),
+            "ALREADY_EXISTS"
+        );
+
         repoCount += 1;
-        nameToRepo[name] = new Repo({
+
+        nameToRepo[name] = Repo({
             superfluidIndex: repoCount,
             admin: admin,
-            superTokenAddress: USDCx
+            impactToken: USDCx
         });
+
+        idaV1Lib.createIndex(USDCx, repoCount);
     }
 
     function donate(string calldata repoName, uint256 amount) external payable {
-        require(nameToRepo[repoName] != 0, "REPO_NOT_FOUND");
-        Repo repo = nameToRepo[repoName];
-        ISuperfluidToken superToken = ISuperfluidToken(repo.superTokenAddress);
+        require(
+            address(nameToRepo[repoName].impactToken) != address(0),
+            "REPO_NOT_FOUND"
+        );
+        Repo storage repo = nameToRepo[repoName];
 
         require(
-            token.allowance(msg.sender, address(this)) == amount,
+            repo.impactToken.allowance(msg.sender, address(this)) == amount,
             "INSUFFICIENT_ALLOWANCE"
         );
 
-        superToken.transferFrom(msg.sender, address(this), amount);
-        _distribute(repo.superfluidIndex, superToken);
-    }
+        // instead of 'amount' it's flowRate
+        // instead of transferFrom it's createFlowWithOperation
 
-    function _distribute(uint256 superfluidIndex, ISuperfluidToken superToken)
-        internal
-    {
-        uint256 superRewardTokenBalance = superToken.balanceOf(address(this));
+        repo.impactToken.transferFrom(msg.sender, address(this), amount);
 
-        (uint256 actualDistributionAmount, ) = _idaV1Lib.calculateDistribution(
-            superToken,
-            address(this),
-            superfluidIndex,
-            superRewardTokenBalance
-        );
-
-        _idav1Lib.distribute(
-            superToken,
-            superfluidIndex,
-            actualDistributionAmount
-        );
+        idaV1Lib.distribute(repo.impactToken, repo.superfluidIndex, amount);
     }
 
     function updateUnits(
         string calldata repoName,
         address subscriber,
-        uint128 units
+        uint128 amount
     ) external {
-        Repo repo = nameToRepo[repoName];
+        Repo storage repo = nameToRepo[repoName];
         require(msg.sender == nameToRepo[repoName].admin, "UNAUTHORIZED");
-        ISuperfluidToken superToken = ISuperfluidToken(repo.superTokenAddress);
+        ISuperToken superToken = ISuperToken(repo.impactToken);
         // Get current units msg.sender holds
-        (, , uint256 currentUnitsHeld, ) = _idav1Lib.getSubscription(
+        (, , uint256 currentUnitsHeld, ) = idaV1Lib.getSubscription(
             superToken,
             address(this),
             repo.superfluidIndex,
@@ -108,11 +106,37 @@ contract Stargazer {
         );
 
         // Update to current amount + points amount
-        _idav1Lib.updateSubscriptionUnits(
+        idaV1Lib.updateSubscriptionUnits(
             superToken,
             repo.superfluidIndex,
             subscriber,
             uint128(currentUnitsHeld + amount)
+        );
+    }
+
+    function getImpactScore(string calldata repoName, address subscriber)
+        external
+        view
+        returns (uint256)
+    {
+        Repo storage repo = nameToRepo[repoName];
+        ISuperToken superToken = ISuperToken(repo.impactToken);
+        (, , uint256 currentUnitsHeld, ) = idaV1Lib.getSubscription(
+            superToken,
+            address(this),
+            repo.superfluidIndex,
+            subscriber
+        );
+        return currentUnitsHeld;
+    }
+
+    function approveSubscription(string calldata repoName) external {
+        Repo storage repo = nameToRepo[repoName];
+
+        idaV1Lib.approveSubscription(
+            repo.impactToken,
+            address(this),
+            repo.superfluidIndex
         );
     }
 }
