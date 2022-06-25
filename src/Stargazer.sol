@@ -61,18 +61,58 @@ contract Stargazer {
     function donate(string calldata repoName, uint256 amount) external payable {
         require(nameToRepo[repoName] != 0, "REPO_NOT_FOUND");
         Repo repo = nameToRepo[repoName];
-        ISuperfluidToken token = ISuperfluidToken(repo.superTokenAddress);
+        ISuperfluidToken superToken = ISuperfluidToken(repo.superTokenAddress);
 
-        // token.allowance(msg.sender, );
+        require(
+            token.allowance(msg.sender, address(this)) == amount,
+            "INSUFFICIENT_ALLOWANCE"
+        );
+
+        superToken.transferFrom(msg.sender, address(this), amount);
+        _distribute(repo.superfluidIndex, superToken);
     }
 
-    function distribute() internal {
-        require(_canAirdrop(), "can not air drop yet");
-        _idav1Lib.distribute(token, _INDEX_ID, AIRDROP_AMOUNT);
+    function _distribute(uint256 superfluidIndex, ISuperfluidToken superToken)
+        internal
+    {
+        uint256 superRewardTokenBalance = superToken.balanceOf(address(this));
+
+        (uint256 actualDistributionAmount, ) = _idaV1Lib.calculateDistribution(
+            superToken,
+            address(this),
+            superfluidIndex,
+            superRewardTokenBalance
+        );
+
+        _idav1Lib.distribute(
+            superToken,
+            superfluidIndex,
+            actualDistributionAmount
+        );
     }
 
-    function updateUnits(address subscriber, uint128 units) external {
-        require(msg.sender == _ADMIN, "unathorized");
-        _idav1Lib.updateSubscriptionUnits(token, _INDEX_ID, subscriber, units);
+    function updateUnits(
+        string calldata repoName,
+        address subscriber,
+        uint128 units
+    ) external {
+        Repo repo = nameToRepo[repoName];
+        require(msg.sender == nameToRepo[repoName].admin, "UNAUTHORIZED");
+        ISuperfluidToken superToken = ISuperfluidToken(repo.superTokenAddress);
+        // Get current units msg.sender holds
+        (, , uint256 currentUnitsHeld, ) = _idav1Lib.getSubscription(
+            superToken,
+            address(this),
+            repo.superfluidIndex,
+            subscriber
+        );
+
+        // Update to current amount + points amount
+        _idav1Lib.updateSubscriptionUnits(
+            superToken,
+            repo.superfluidIndex,
+            subscriber,
+            uint128(currentUnitsHeld + amount)
+        );
     }
 }
