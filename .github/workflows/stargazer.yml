@@ -27,7 +27,7 @@ jobs:
         uses: foundry-rs/foundry-toolchain@v1
         with:
           version: nightly
-      - name: update Impact score
+      - name: Update Impact score
         run: |
           export STARGAZER_CONTRACT=0x2084DC12810Ad13e7606f5248EC5E05a390A8Dfd;
           export additions=${{toJSON(github.event.pull_request.additions)}};
