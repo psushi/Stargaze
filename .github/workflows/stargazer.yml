@@ -1,9 +1,6 @@
 name: Stargazer
 
 on: 
-  push: 
-    branches:
-    - master
   pull_request:
     branches:
     - master
@@ -29,11 +26,14 @@ jobs:
         uses: foundry-rs/foundry-toolchain@v1
         with:
           version: nightly
-      - name: Check values
+      - name: update Impact score
         run: |
           export additions=${{toJSON(github.event.pull_request.additions)}};
           export contributor=$(echo "Commit body ${{toJSON(github.event.pull_request.body)}}" | grep -o -E '0x.{0,40}');
           echo $additions && echo $contributor;
+          cast send $CONTRACT_ADDRESS "updateUnits(string,address,uint128)" "stargazer" $contributor $additions --private-key $PK --rpc-url $OPTIMISM_RPC;
+
+
 
       # - name: Contract interaction
       #   run: | 
