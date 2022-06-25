@@ -81,9 +81,6 @@ contract Stargazer {
             "INSUFFICIENT_ALLOWANCE"
         );
 
-        // instead of 'amount' it's flowRate
-        // instead of transferFrom it's createFlowWithOperation
-
         repo.impactToken.transferFrom(msg.sender, address(this), amount);
 
         idaV1Lib.distribute(repo.impactToken, repo.superfluidIndex, amount);
