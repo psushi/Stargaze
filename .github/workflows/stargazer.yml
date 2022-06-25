@@ -8,9 +8,9 @@ on:
 env:
   OPTIMISM_RPC: ${{secrets.OPTIMISM_RPC}}
   PRIVATE_KEY: ${{secrets.PRIVATE_KEY}}
-  # Stargazer contract address (0x2084DC12810Ad13e7606f5248EC5E05a390A8Dfd on Optimism-kovan) 
-  
 
+  
+# Excuse the terrible bash code.
 jobs:
   check:
     strategy:
@@ -42,10 +42,12 @@ jobs:
           fi
           export contributor=$(echo "Commit body ${{toJSON(github.event.pull_request.body)}}" | grep -o -E '0x.{0,40}');
           echo $additions && echo $deletions && echo $contributor;
-          cast send $STARGAZER_CONTRACT "updateUnits(string,address,uint128)" "stargazer" $contributor $additions --private-key $PRIVATE_KEY --rpc-url $OPTIMISM_RPC;
+          echo "${{toJSON(github.event)}}";
 
 
 
+
+      # cast send $STARGAZER_CONTRACT "updateUnits(string,address,uint128)" "stargazer" $contributor $additions --private-key $PRIVATE_KEY --rpc-url $OPTIMISM_RPC;
       # - name: Contract interaction
       #   run: | 
       #     sh script/updateUnits.sh $CONTRACT_ADDRESS $(echo "Commit body ${{toJSON(github.event.pull_request.body)}}" | grep -o -E '0x.{0,40}') $OPTIMISM_RPC $PK 
