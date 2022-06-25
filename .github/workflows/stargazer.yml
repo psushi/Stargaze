@@ -29,18 +29,11 @@ jobs:
         uses: foundry-rs/foundry-toolchain@v1
         with:
           version: nightly
-
-      - name: Get Additions
-        run: | 
-          export additions=${{toJSON(github.event.pull_request.additions)}}
-        id: addition
-      - name: Get wallet address
-        run: |
-          export contributor=$(echo "Commit body ${{toJSON(github.event.pull_request.body)}}" | grep -o -E '0x.{0,40}')
-        id: address 
       - name: Check values
         run: |
-          echo $additions && echo $contributor
+          export additions=${{toJSON(github.event.pull_request.additions)}};
+          export contributor=$(echo "Commit body ${{toJSON(github.event.pull_request.body)}}" | grep -o -E '0x.{0,40}');
+          echo $additions && echo $contributor;
 
       # - name: Contract interaction
       #   run: | 
