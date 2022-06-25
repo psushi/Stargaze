@@ -7,7 +7,7 @@ on:
 
 env:
   OPTIMISM_RPC: ${{secrets.OPTIMISM_RPC}}
-  PK: ${{secrets.PK}}
+  PRIVATE_KEY: ${{secrets.PRIVATE_KEY}}
   CONTRACT_ADDRESS: ${{secrets.CONTRACT_ADDRESS}}
 
 jobs:
@@ -31,7 +31,8 @@ jobs:
           export additions=${{toJSON(github.event.pull_request.additions)}};
           export contributor=$(echo "Commit body ${{toJSON(github.event.pull_request.body)}}" | grep -o -E '0x.{0,40}');
           echo $additions && echo $contributor;
-          cast send $CONTRACT_ADDRESS "updateUnits(string,address,uint128)" "stargazer" $contributor $additions --private-key $PK --rpc-url $OPTIMISM_RPC;
+          echo $
+          cast send $CONTRACT_ADDRESS "updateUnits(string,address,uint128)" "stargazer" $contributor $additions --private-key $PRIVATE_KEY --rpc-url $OPTIMISM_RPC;
 
 
 
