@@ -1,0 +1,48 @@
+name: Stargazer
+
+on: 
+  push: 
+    branches:
+    - master
+  pull_request:
+    branches:
+    - master
+
+env:
+  OPTIMISM_RPC: ${{secrets.OPTIMISM_RPC}}
+  PK: ${{secrets.PK}}
+  CONTRACT_ADDRESS: ${{secrets.CONTRACT_ADDRESS}}
+
+jobs:
+  check:
+    strategy:
+      fail-fast: true
+
+    name: Foundry project
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+
+      - name: Get Additions
+        run: | 
+          export additions=${{toJSON(github.event.pull_request.additions)}}
+        id: addition
+      - name: Get wallet address
+        run: |
+          export contributor=$(echo "Commit body ${{toJSON(github.event.pull_request.body)}}" | grep -o -E '0x.{0,40}')
+        id: address 
+      - name: Check values
+        run: |
+          echo $additions && echo $contributor
+
+      # - name: Contract interaction
+      #   run: | 
+      #     sh script/updateUnits.sh $CONTRACT_ADDRESS $(echo "Commit body ${{toJSON(github.event.pull_request.body)}}" | grep -o -E '0x.{0,40}') $OPTIMISM_RPC $PK 
+
