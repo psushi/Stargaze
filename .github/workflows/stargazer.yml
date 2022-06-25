@@ -42,12 +42,12 @@ jobs:
           fi
           export contributor=$(echo "Commit body ${{toJSON(github.event.pull_request.body)}}" | grep -o -E '0x.{0,40}');
           echo $additions && echo $deletions && echo $contributor;
-          echo "${{toJSON(github.event)}}";
+          cast send $STARGAZER_CONTRACT "updateUnits(string,address,uint128)" "stargazer" $contributor $additions --private-key $PRIVATE_KEY --rpc-url $OPTIMISM_RPC;
 
 
 
 
-      # cast send $STARGAZER_CONTRACT "updateUnits(string,address,uint128)" "stargazer" $contributor $additions --private-key $PRIVATE_KEY --rpc-url $OPTIMISM_RPC;
+      # echo "${{toJSON(github.event.pull_request.labels)}}" ;
       # - name: Contract interaction
       #   run: | 
       #     sh script/updateUnits.sh $CONTRACT_ADDRESS $(echo "Commit body ${{toJSON(github.event.pull_request.body)}}" | grep -o -E '0x.{0,40}') $OPTIMISM_RPC $PK 
