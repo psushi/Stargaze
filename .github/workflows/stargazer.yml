@@ -8,7 +8,8 @@ on:
 env:
   OPTIMISM_RPC: ${{secrets.OPTIMISM_RPC}}
   PRIVATE_KEY: ${{secrets.PRIVATE_KEY}}
-  CONTRACT_ADDRESS: ${{secrets.CONTRACT_ADDRESS}}
+  # Stargazer contract address (0x2084DC12810Ad13e7606f5248EC5E05a390A8Dfd on Optimism-kovan) 
+  
 
 jobs:
   check:
@@ -28,11 +29,20 @@ jobs:
           version: nightly
       - name: update Impact score
         run: |
+          export STARGAZER_CONTRACT=0x2084DC12810Ad13e7606f5248EC5E05a390A8Dfd;
           export additions=${{toJSON(github.event.pull_request.additions)}};
+          export deletions=${{toJSON(github.event.pull_request.deletions)}};
+          if [$additions -eq null]
+          then
+            export additions=0;
+          fi
+          if [$deletions -eq null]
+          then
+            export additions=0;
+          fi
           export contributor=$(echo "Commit body ${{toJSON(github.event.pull_request.body)}}" | grep -o -E '0x.{0,40}');
-          echo $additions && echo $contributor;
-          echo $
-          cast send $CONTRACT_ADDRESS "updateUnits(string,address,uint128)" "stargazer" $contributor $additions --private-key $PRIVATE_KEY --rpc-url $OPTIMISM_RPC;
+          echo $additions && echo $deletions && echo $contributor;
+          cast send $STARGAZER_CONTRACT "updateUnits(string,address,uint128)" "stargazer" $contributor $additions --private-key $PRIVATE_KEY --rpc-url $OPTIMISM_RPC;
 
 
 
