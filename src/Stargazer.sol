@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {ISuperfluid, ISuperfluidToken} from "@superfluid-finance/ethereum-contracts/contracts/interfaces/superfluid/ISuperfluid.sol";
+import {ISuperfluid, ISuperfluidToken} from "@superfluid-finance/interfaces/superfluid/ISuperfluid.sol";
 
-import {SuperfluidToken} from "@superfluid-finance/ethereum-contracts/contracts/superfluid/SuperfluidToken.sol";
+import {SuperfluidToken} from "@superfluid-finance/superfluid/SuperfluidToken.sol";
 
-import {IInstantDistributionAgreementV1} from "@superfluid-finance/ethereum-contracts/contracts/interfaces/agreements/IInstantDistributionAgreementV1.sol";
+import {IInstantDistributionAgreementV1} from "@superfluid-finance/interfaces/agreements/IInstantDistributionAgreementV1.sol";
 
-import {IDAv1Library} from "@superfluid-finance/ethereum-contracts/contracts/apps/IDAv1Library.sol";
+import {IDAv1Library} from "@superfluid-finance/apps/IDAv1Library.sol";
 
 contract Stargazer {
     ///////////////////////////////////////////////////////////////////////////////

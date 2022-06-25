@@ -1,4 +1,4 @@
-@superfluid-finance/=node_modules/@superfluid-finance/
+@superfluid-finance/=lib/protocol-monorepo/packages/ethereum-contracts/contracts/
 ds-test/=lib/ds-test/src/
 forge-std/=lib/forge-std/src/
 solmate/=lib/solmate/src/
