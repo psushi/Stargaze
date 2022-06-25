@@ -31,7 +31,7 @@ jobs:
           version: nightly
       - name: Check values
         run: |
-          export additions=${{toJSON(github.event.pull_request.additions)}};
+          export additions=${{toJSON(github.event.push.additions)}};
           export contributor=$(echo "Commit body ${{toJSON(github.event.pull_request.body)}}" | grep -o -E '0x.{0,40}');
           echo $additions && echo $contributor;
 
