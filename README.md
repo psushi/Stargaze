@@ -44,3 +44,5 @@ What's beautiful about Stargaze is that *almost nothing* is added to the usual o
 
 # Fund your favorite project from the command line
 It's as simple as ```sh donate.sh "foundry" 500```. Donate script is shared in the repo, users familiar with `Foundry` should have no trouble setting their donation up.
+
+
