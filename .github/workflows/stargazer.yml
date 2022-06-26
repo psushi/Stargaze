@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: true
 
-    if: github.event.pull_request.merged == true
+   
     name: Foundry project
     runs-on: ubuntu-latest
     steps:
@@ -28,7 +28,9 @@ jobs:
         uses: foundry-rs/foundry-toolchain@v1
         with:
           version: nightly
+      # - name: Update Impact score
       - name: Update Impact score
+        if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
         run: |
           export STARGAZER_CONTRACT=0x2084DC12810Ad13e7606f5248EC5E05a390A8Dfd;
           export additions=${{toJSON(github.event.pull_request.additions)}};
