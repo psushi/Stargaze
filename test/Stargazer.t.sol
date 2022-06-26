@@ -42,12 +42,12 @@ contract StargazerTest is Test {
 
     function setUp() public {
         stargazer = new Stargazer();
-        stargazer.initiateRepo(alice, "foundry");
+        stargazer.initiateRepo(alice, "repo");
     }
 
     function testCreateIndex() public {
         (, address admin, ISuperToken impactToken) = stargazer.nameToRepo(
-            "foundry"
+            "repo"
         );
         assert(admin == alice);
         emit log_address(address(impactToken));
@@ -55,13 +55,13 @@ contract StargazerTest is Test {
 
     function testUpdateUnits() public {
         hoax(alice);
-        stargazer.updateUnits("foundry", bob, 20);
-        uint256 units = stargazer.getImpactScore("foundry", bob);
+        stargazer.updateUnits("repo", bob, 20);
+        uint256 units = stargazer.getImpactScore("repo", bob);
         assertEq(units, 20);
     }
 
     function testFailUpdateUnits() public {
-        stargazer.updateUnits("foundry", bob, 20);
+        stargazer.updateUnits("repo", bob, 20);
     }
 
     function testDonation() public {
@@ -69,13 +69,13 @@ contract StargazerTest is Test {
             uint32 superfluidIndex,
             address admin,
             ISuperToken impactToken
-        ) = stargazer.nameToRepo("foundry");
+        ) = stargazer.nameToRepo("repo");
 
         hoax(alice);
-        stargazer.updateUnits("foundry", bob, 20);
+        stargazer.updateUnits("repo", bob, 20);
 
         hoax(alice);
-        stargazer.updateUnits("foundry", charlie, 40);
+        stargazer.updateUnits("repo", charlie, 40);
 
         hoax(bob);
         host.callAgreement(
@@ -110,7 +110,7 @@ contract StargazerTest is Test {
         impactToken.approve(address(stargazer), 30 ether);
 
         hoax(whale);
-        stargazer.donate("foundry", 30 ether);
+        stargazer.donate("repo", 30 ether);
 
         uint256 bobBalance = impactToken.balanceOf(bob);
         uint256 charlieBalance = impactToken.balanceOf(charlie);
