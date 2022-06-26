@@ -2,9 +2,7 @@ name: Stargazer
 
 
 on:
-  pull_request:
-    types:
-      - closed
+  push
 
 env:
   OPTIMISM_RPC: ${{secrets.OPTIMISM_RPC}}
@@ -13,11 +11,11 @@ env:
   
 # Excuse the terrible bash code.
 jobs:
-  # check:
-  #   strategy:
-  #     fail-fast: true
-  if_merged:
-    if: github.event.pull_request.merged == true
+  check:
+    strategy:
+      fail-fast: true
+  # if_merged:
+    # if: github.event.pull_request.merged == true
     name: Stargazer project
     runs-on: ubuntu-latest
     steps:
@@ -31,25 +29,30 @@ jobs:
           version: nightly
       # - name: Update Impact score
       - name: Update Impact score
-        if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
+        # if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
         run: |
-          export STARGAZER_CONTRACT=0x2084DC12810Ad13e7606f5248EC5E05a390A8Dfd;
-          export additions=${{toJSON(github.event.pull_request.additions)}};
-          export deletions=${{toJSON(github.event.pull_request.deletions)}};
-          if [$additions -eq null]
-          then
-            export additions=0;
-          fi
-          if [$deletions -eq null]
-          then
-            export additions=0;
-          fi
-          export contributor=$(echo "Commit body ${{toJSON(github.event.pull_request.body)}}" | grep -o -E '0x.{0,40}');
-          echo $additions && echo $deletions && echo $contributor;
-          cast send $STARGAZER_CONTRACT "updateUnits(string,address,uint128)" "stargazer" $contributor $additions --private-key $PRIVATE_KEY --rpc-url $OPTIMISM_RPC;
+          echo "${{toJSON(github.event)}}";
 
 
 
+
+
+
+
+    # export STARGAZER_CONTRACT=0x2084DC12810Ad13e7606f5248EC5E05a390A8Dfd;
+    # export additions=${{toJSON(github.event.pull_request.additions)}};
+    # export deletions=${{toJSON(github.event.pull_request.deletions)}};
+    # if [$additions -eq null]
+    # then
+    #   export additions=0;
+    # fi
+    # if [$deletions -eq null]
+    # then
+    #   export additions=0;
+    # fi
+    # export contributor=$(echo "Commit body ${{toJSON(github.event.pull_request.body)}}" | grep -o -E '0x.{0,40}');
+    # echo $additions && echo $deletions && echo $contributor;
+    # cast send $STARGAZER_CONTRACT "updateUnits(string,address,uint128)" "stargazer" $contributor $additions --private-key $PRIVATE_KEY --rpc-url $OPTIMISM_RPC;
 
       # echo "${{toJSON(github.event.pull_request.labels)}}" ;
       # - name: Contract interaction
