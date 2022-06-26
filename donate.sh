@@ -13,8 +13,10 @@ export fUSDC=0xa794c9ee519fd31bbce643e8d8138f735e97d1db;
 # Address corresponding to the private_key (your wallet address)
 export user=0xD0074F4E6490ae3f888d1d4f7E3E43326bD3f0f5;
 
+
 # Address of the stargazer contract.
-export stargazer_contract=0x$284DC12810Ad13e7606f5248EC5E05a390A8Dfd;
+export stargazer_contract=0x2084DC12810Ad13e7606f5248EC5E05a390A8Dfd;
+
 
 
 echo "Donating to the $1 opensource project...";
