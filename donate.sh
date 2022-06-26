@@ -17,7 +17,7 @@ export user=0xD0074F4E6490ae3f888d1d4f7E3E43326bD3f0f5;
 export stargazer_contract=0x$284DC12810Ad13e7606f5248EC5E05a390A8Dfd;
 
 
-echo "Donating to the Foundry opensource project...";
+echo "Donating to the $1 opensource project...";
 
 echo "Getting some testnet USDC 💵";
 cast send $fUSDC "mint(address,uint256)" $user $(cast --to-wei $2) --private-key $private_key --rpc-url $optimism_rpc > /dev/null;
@@ -37,4 +37,4 @@ echo "Current USDCx balance of user: $(cast call $fUSDCx "balanceOf(address)(uin
 # Donating fUSDCx that will be instantly distributed to all contributors! 
 cast send $fUSDCx "approve(address,uint256)" $stargazer_contract $(cast --to-wei $2) --rpc-url $optimism_rpc --private-key $private_key > /dev/null; 
 cast send $stargazer_contract "donate(string,uint256)" $1 $(cast --to-wei $2) --rpc-url $optimism_rpc --private-key $private_key > /dev/null;
-echo "Donated $2 USDC to all the contributors to the Foundry opensource project! Thank you! 💜";
+echo "Distributing $2 USDC to all contributors of $1 open-source repository! Thank you! 💜";
