@@ -41,6 +41,8 @@ What's beautiful about Stargaze is that *almost nothing* is added to the usual o
 - Add a ~15 line workflow to your github repo.
 - Make a tiny change to your pull request template. 
 - That's it. Now you're using the Stargaze framework. People can now donate to your project and the funds will be distributed among all contributors proportional to their contributions. 
+- 
+This Stargaze contract repo also uses the Stargaze framework! Checkout the workflow `stargazer.yml` to see a simple implementation (just using additions for calculating scores). Hope it's clear how powerful it would be to use a sophisticated metric. 
 
 # Fund your favorite project from the command line
 It's as simple as ```sh donate.sh "foundry" 500```. Donate script is shared in the repo, users familiar with `Foundry` should have no trouble setting their donation up.
