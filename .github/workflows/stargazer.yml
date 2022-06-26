@@ -1,9 +1,10 @@
 name: Stargazer
 
-on: 
+
+on:
   pull_request:
-    branches:
-    - master
+    types:
+      - closed
 
 env:
   OPTIMISM_RPC: ${{secrets.OPTIMISM_RPC}}
@@ -12,12 +13,12 @@ env:
   
 # Excuse the terrible bash code.
 jobs:
-  check:
-    strategy:
-      fail-fast: true
-
-   
-    name: Foundry project
+  # check:
+  #   strategy:
+  #     fail-fast: true
+  if_merged:
+    if: github.event.pull_request.merged == true
+    name: Stargazer project
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -48,6 +49,12 @@ jobs:
           cast send $STARGAZER_CONTRACT "updateUnits(string,address,uint128)" "stargazer" $contributor $additions --private-key $PRIVATE_KEY --rpc-url $OPTIMISM_RPC;
 
 
+
+
+      # echo "${{toJSON(github.event.pull_request.labels)}}" ;
+      # - name: Contract interaction
+      #   run: | 
+      #     sh script/updateUnits.sh $CONTRACT_ADDRESS $(echo "Commit body ${{toJSON(github.event.pull_request.body)}}" | grep -o -E '0x.{0,40}') $OPTIMISM_RPC $PK 
 
 
       # echo "${{toJSON(github.event.pull_request.labels)}}" ;
