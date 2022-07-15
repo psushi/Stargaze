@@ -2,6 +2,9 @@
 A simple, seamless way to support your favorite opensource project. Built at the ETH NYC hackathon. <br>
 We ♥️ open-source and Gitcoin and wanted to build a framework using the best qualities of both.
 
+Won 1st place for Optimism (most optimistic hack) and Superfluid (best project) at [ETH NYC 2022](https://nyc.ethglobal.co). <br>
+Submission link: [ethglobal/stargaze](https://ethglobal.com/showcase/stargaze-igmkq)
+
 
 # tldr
 An extremely simple way to:
