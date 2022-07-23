@@ -12,6 +12,11 @@ import {IDAv1Library} from "@superfluid-finance/apps/IDAv1Library.sol";
 // import {Superfluid, InstantDistributionAgreementV1, SuperTokenFactory, SuperfluidFrameworkDeployer} from "@superfluid-finance/utils/SuperfluidFrameworkDeployer.sol";
 import {ISuperfluid} from "@superfluid-finance/interfaces/superfluid/ISuperfluid.sol";
 
+error Stargazer__initiateRepo__AlreadyExists();
+error Stargazer__donate__RepoNotFound();
+error Stargazer__donate__InsufficientAllowance();
+error Stargazer__updateUnits__UNAUTHORIZED();
+
 contract Stargazer {
     ///////////////////////////////////////////////////////////////////////////////
     // SuperFluid stuff
@@ -52,11 +57,7 @@ contract Stargazer {
         idaV1Lib = IDAv1Library.InitData(host, ida);
     }
 
-    function initiateRepo(address admin, string calldata name) external {
-        require(
-            address(nameToRepo[name].impactToken) == address(0),
-            "ALREADY_EXISTS"
-        );
+    function initiateRepo(address admin, string calldata name) external AlreadyExists {
 
         repoCount += 1;
 
@@ -68,18 +69,14 @@ contract Stargazer {
 
         idaV1Lib.createIndex(USDCx, repoCount);
     }
+    modifier AlreadyExists {
+        if (address(nameToRepo[name].impactToken) != address(0)) {
+            revert Stargazer__initiateRepo__AlreadyExists();
+        }
+        _;
+    }
 
-    function donate(string calldata repoName, uint256 amount) external payable {
-        require(
-            address(nameToRepo[repoName].impactToken) != address(0),
-            "REPO_NOT_FOUND"
-        );
-        Repo storage repo = nameToRepo[repoName];
-
-        require(
-            repo.impactToken.allowance(msg.sender, address(this)) == amount,
-            "INSUFFICIENT_ALLOWANCE"
-        );
+    function donate(string calldata repoName, uint256 amount) external payable RepoNotFound InsufficientAllowance {
 
         // instead of 'amount' it's flowRate
         // instead of transferFrom it's createFlowWithOperation
@@ -88,6 +85,18 @@ contract Stargazer {
 
         idaV1Lib.distribute(repo.impactToken, repo.superfluidIndex, amount);
     }
+    modifier RepoNotFound {
+        if (address(nameToRepo[repoName].impactToken) == address(0)) {
+            revert Stargazer__donate__RepoNotFound();
+        }
+        _;
+    }
+    modifier InsufficientAllowance {
+        if (repo.impactToken.allowance(msg.sender, address(this)) != amount) {
+            revert Stargazer__donate__InsufficientAllowance();
+        }
+        _;
+    }
 
     function updateUnits(
         string calldata repoName,
@@ -95,7 +104,7 @@ contract Stargazer {
         uint128 amount
     ) external {
         Repo storage repo = nameToRepo[repoName];
-        require(msg.sender == nameToRepo[repoName].admin, "UNAUTHORIZED");
+        if (msg.sender != nameToRepo[repoName].admin) {revert Stargazer__updateUnits__UNAUTHORIZED();
         ISuperToken superToken = ISuperToken(repo.impactToken);
         // Get current units msg.sender holds
         (, , uint256 currentUnitsHeld, ) = idaV1Lib.getSubscription(
